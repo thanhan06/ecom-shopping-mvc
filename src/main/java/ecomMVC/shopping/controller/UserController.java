@@ -1,17 +1,20 @@
 package ecomMVC.shopping.controller;
 
-import org.hibernate.annotations.Audited;
+import java.util.Locale;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import ecomMVC.shopping.constant.Constant;
 import ecomMVC.shopping.dto.req.AuthenticationRequest;
 import ecomMVC.shopping.service.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -21,6 +24,10 @@ public class UserController {
     @Autowired
     AuthenticationService authenticationService;
 
+    // Inject MessageSource để đọc file properties
+    @Autowired
+    MessageSource messageSource;
+
     @GetMapping
     public String index() {
         return "index";
@@ -29,21 +36,30 @@ public class UserController {
     @GetMapping("/login")
     public String login(Model model) {
         model.addAttribute("authenticationReq", new AuthenticationRequest());
-        return "login";
+        return Constant.LOGIN;
     }
 
     @PostMapping("/login")
-    public String loginSubmit(@ModelAttribute("authenticationReq") AuthenticationRequest authenticationReq,
-            Model model) {
+    public String loginSubmit(@Valid @ModelAttribute("authenticationReq") AuthenticationRequest authenticationReq,
+            BindingResult bindingResult,
+            Model model,
+            Locale locale) { // Thêm tham số Locale để biết ngôn ngữ đang chọn
 
-        // Đảo ngược thứ tự so sánh chuỗi ("admin".equals) để tránh lỗi
-        // NullPointerException nếu username bị null
+        // 1. Kiểm tra vi phạm Validation (trống, vượt quá ký tự...)
+        if (bindingResult.hasErrors()) {
+            // Trả ngay về trang login để Thymeleaf tự động render lỗi qua thẻ th:errors
+            return Constant.LOGIN;
+        }
+
+        // 2. Nếu form điền hợp lệ, tiến hành xác thực tài khoản trong DB
         if (authenticationService.authenticate(authenticationReq)) {
-            return "redirect:/";
+            return Constant.REDIRECT + Constant.PRODUCTS;
         } else {
-            // Đính kèm thông báo lỗi và quay lại đúng trang đăng nhập
-            model.addAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
-            return "login";
+            // Đọc câu thông báo từ file properties tương ứng với ngôn ngữ đang chọn
+            String errorMsg = messageSource.getMessage("login.error.invalid", null, locale);
+
+            model.addAttribute("errorMessage", errorMsg);
+            return Constant.LOGIN;
         }
     }
 }

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+    <head>
+        <title layout:fragment="title" th:text="#{login.title}"></title>
+
+        <th:block layout:fragment="page-css">
+            <link rel="stylesheet" th:href="@{/css/login.css}">
+        </th:block>
+    </head>
+    <body>
+
+        <div layout:fragment="content">
+
+            <div style="margin-bottom: 20px;">
+                <span style="font-weight: bold;">Ngôn ngữ / Language: </span>
+                <a th:href="@{''(lang=vi)}">Tiếng Việt</a> |
+                <a th:href="@{''(lang=en)}">English</a>
+            </div>
+
+            <form id="loginForm" th:action="@{/login}" th:object="${authenticationReq}"
+                method="post" novalidate>
+                <div>
+                    <label for="username" th:text="#{login.username}"></label>
+                    <input type="text" id="username" th:field="*{username}"
+                        required maxlength="20">
+
+                    <!-- Gắn id tĩnh và luôn render thẻ span này -->
+                    <span id="usernameError"
+                        style="color: red; font-size: 0.85em; display: block; margin-top: 5px;">
+                        <th:block th:if="${#fields.hasErrors('username')}"
+                            th:text="${#fields.errors('username')[0]}"></th:block>
+                    </span>
+                </div>
+                <br>
+                <div>
+                    <label for="password" th:text="#{login.password}"></label>
+                    <input type="password" id="password" th:field="*{password}"
+                        required minlength="5">
+
+                    <!-- Gắn id tĩnh -->
+                    <span id="passwordError"
+                        style="color: red; font-size: 0.85em; display: block; margin-top: 5px;">
+                        <th:block
+                            th:if="${!#fields.hasErrors('username') and #fields.hasErrors('password')}"
+                            th:text="${#fields.errors('password')[0]}">
+                        </th:block>
+                    </span>
+                </div>
+                <br>
+                <button type="submit" th:text="#{login.button}"></button>
+            </form>
+
+            <!-- Gắn ID globalError cho lỗi xác thực từ Controller -->
+            <p id="globalError" th:if="${errorMessage}" th:text="${errorMessage}"
+                style="color: red; font-style: italic;"></p>
+
+        </div>
+
+        <th:block layout:fragment="page-js">
+            <script th:inline="javascript">
+                window.I18N_LOGIN = {
+                    userBlank: /*[[#{login.validation.username.notblank}]]*/ 'Tên đăng nhập trống',
+                    userSize: /*[[#{login.validation.username.size}]]*/ 'Tên đăng nhập quá dài',
+                    passBlank: /*[[#{login.validation.password.notblank}]]*/ 'Mật khẩu trống',
+                    passSize: /*[[#{login.validation.password.size}]]*/ 'Mật khẩu quá ngắn'
+                };
+            </script>
+            <script th:src="@{/js/login.js}"></script>
+        </th:block>
+
+    </body>
+</html>
