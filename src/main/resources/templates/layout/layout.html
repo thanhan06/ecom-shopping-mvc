@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- 1. SEO động: Nếu Controller không truyền 'pageDesc', dùng câu mặc định -->
+        <meta name="description"
+            th:content="${pageDesc ?: 'Hệ thống thương mại điện tử EcomMVC'}">
+        <title layout:fragment="title">Tiêu đề mặc định</title>
+
+        <!-- CSS dùng chung (Bootstrap, Tailwind, font...) -->
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+
+        <!-- 2. Điểm neo để các trang con tự nhúng CSS đặc thù -->
+        <th:block layout:fragment="page-css"></th:block>
+    </head>
+    <body>
+        <!-- 3. Bơm URL hiện tại vào Header để xử lý logic Active Menu -->
+        <!-- Đổi #httpServletRequest.requestURI thành #ctx.springRequestContext.requestUri -->
+        <header th:replace="~{fragments/header :: header(currentUrl=${currentUrl})}"></header>
+
+        <!-- Khu vực đổ dữ liệu của trang con -->
+        <main layout:fragment="content">
+        </main>
+
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+        <!-- JS dùng chung (JQuery, Bootstrap JS...) -->
+        <script th:src="@{/js/main.js}"></script>
+
+        <!-- Điểm neo để các trang con tự nhúng JS đặc thù -->
+        <th:block layout:fragment="page-js"></th:block>
+    </body>
+</html>

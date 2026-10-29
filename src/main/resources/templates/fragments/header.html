@@ -1,0 +1,7 @@
+<!-- fragments/header.html -->
+<header th:fragment="header(currentUrl)">
+    <nav>
+        <a th:href="@{/}" th:class="${currentUrl == '/' ? 'active' : ''}">Trang chủ</a>
+        <a th:href="@{/login}" th:class="${currentUrl == '/login' ? 'active' : ''}">Đăng nhập</a>
+    </nav>
+</header>

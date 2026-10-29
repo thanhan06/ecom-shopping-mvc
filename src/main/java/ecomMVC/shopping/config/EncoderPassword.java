@@ -1,0 +1,17 @@
+package ecomMVC.shopping.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+/**
+ * Class EncoderPassword to config PasswordEncoder
+ */
+@Configuration
+public class EncoderPassword {
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+    }
+}
