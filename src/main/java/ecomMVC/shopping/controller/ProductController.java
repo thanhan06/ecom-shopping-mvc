@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 
+import ecomMVC.shopping.constant.Constant;
 import ecomMVC.shopping.service.ProductService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -18,6 +20,7 @@ public class ProductController {
     @GetMapping("/products")
     public String showProducts(Model model) {
         model.addAttribute("products", productService.getAllProducts());
-        return "pages/products";
+        return Constant.PRODUCTS;
     }
+
 }
