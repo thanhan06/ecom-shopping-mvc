@@ -26,4 +26,11 @@ public class ProductServiceImpl implements ProductService {
                 .map(productMapper::toProductResponse)
                 .toList();
     }
+    
+    @Override 
+    public ProductResponse getProductById(String productId) {
+        return productRepository.findByIdWithProductType(productId)
+                .map(productMapper::toProductResponse)
+                .orElse(null);
+    }
 }

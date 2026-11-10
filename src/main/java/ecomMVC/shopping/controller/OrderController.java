@@ -14,8 +14,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ecomMVC.shopping.constant.Constant;
 import ecomMVC.shopping.dto.OrderItemDTO;
+import ecomMVC.shopping.dto.res.ProductResponse;
 import ecomMVC.shopping.entity.ProductEntity;
 import ecomMVC.shopping.repository.ProductRepository;
+import ecomMVC.shopping.service.ProductService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -27,7 +29,7 @@ import lombok.experimental.FieldDefaults;
 public class OrderController {
 
     @Autowired
-    ProductRepository productRepository;
+    ProductService productService;
 
     @GetMapping("/order/summary")
     public String showOrders(Model model) {
@@ -61,17 +63,17 @@ public class OrderController {
             String productId = productIds.get(i);
             Integer quantity = quantities.get(i);
 
-            ProductEntity product = productRepository.findById(productId).orElse(null);
+            ProductResponse product = productService.getProductById(productId);
 
             if (product != null) {
-                if (quantity <= product.getProductAmount()) {
+                if (quantity <= product.productAmount()) {
                     OrderItemDTO item = new OrderItemDTO(product, quantity);
                     selectedItems.add(item);
                     totalOrderPrice += item.getSubTotal();
                 } else {
                     // Thay vì return ngay, ta nhét câu thông báo vào danh sách lỗi
-                    errorMessages.add("Sản phẩm '" + product.getProductName() + "' vượt quá tồn kho (chỉ còn "
-                            + product.getProductAmount() + ").");
+                    errorMessages.add("Sản phẩm '" + product.productName() + "' vượt quá tồn kho (chỉ còn "
+                            + product.productAmount() + ").");
                 }
             } else {
                 errorMessages.add("Sản phẩm mã " + productId + " không tồn tại.");

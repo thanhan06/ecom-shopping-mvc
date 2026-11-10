@@ -31,7 +31,6 @@ public class ProductApiController {
         }
 
         ProductEntity product = productRepository.findById(productId).orElse(null);
-
         if (product == null) {
             response.put("valid", false);
             response.put("message", "Sản phẩm không tồn tại!");
@@ -40,7 +39,7 @@ public class ProductApiController {
 
         if (quantity > product.getProductAmount()) {
             response.put("valid", false);
-            response.put("message", "Chỉ còn " + product.getProductAmount() + " chiếc");
+            response.put("message","Sản phẩm "+ product.getProductName() + " chỉ còn " + product.getProductAmount() + " chiếc");
             response.put("actualStock", product.getProductAmount());
         } else {
             response.put("valid", true);

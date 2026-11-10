@@ -1,6 +1,7 @@
 package ecomMVC.shopping.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,9 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
 
         @Query("SELECT p FROM ProductEntity p JOIN FETCH p.productType")
         List<ProductEntity> findAllWithProductType();
+
+        @Query ("SELECT p FROM ProductEntity p JOIN FETCH p.productType pt WHERE p.productId = :productId")
+        Optional<ProductEntity> findByIdWithProductType(@Param("productId") String productId);
 
         // // 2. Đã thêm các từ khóa AND, khoảng trắng và sửa lỗi chính tả description
         // @Query(

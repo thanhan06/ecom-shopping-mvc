@@ -9,4 +9,6 @@ import ecomMVC.shopping.dto.res.ProductResponse;
 @Service
 public interface ProductService {
     public List<ProductResponse> getAllProducts();
+
+    public ProductResponse getProductById(String productId);
 }
