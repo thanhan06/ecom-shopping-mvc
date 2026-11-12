@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ecomMVC.shopping.constant.Constant;
+import ecomMVC.shopping.dto.CheckoutResult;
 import ecomMVC.shopping.dto.OrderItemDTO;
 import ecomMVC.shopping.dto.res.ProductResponse;
 import ecomMVC.shopping.entity.ProductEntity;
@@ -50,48 +51,25 @@ public class OrderController {
             Model model,
             RedirectAttributes redirectAttributes) {
 
+        // 1. Chốt chặn cơ bản nhất
         if (productIds == null || quantities == null || productIds.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng chọn ít nhất 1 sản phẩm!");
             return "redirect:/products";
         }
+        // 2. Giao toàn bộ việc nặng nhọc cho Service
+        CheckoutResult result = productService.processCheckout(productIds, quantities);
 
-        List<OrderItemDTO> selectedItems = new ArrayList<>();
-        List<String> errorMessages = new ArrayList<>(); // Khởi tạo mảng hứng lỗi
-        double totalOrderPrice = 0;
-
-        for (int i = 0; i < productIds.size(); i++) {
-            String productId = productIds.get(i);
-            Integer quantity = quantities.get(i);
-
-            ProductResponse product = productService.getProductById(productId);
-
-            if (product != null) {
-                if (quantity <= product.productAmount()) {
-                    OrderItemDTO item = new OrderItemDTO(product, quantity);
-                    selectedItems.add(item);
-                    totalOrderPrice += item.getSubTotal();
-                } else {
-                    // Thay vì return ngay, ta nhét câu thông báo vào danh sách lỗi
-                    errorMessages.add("Sản phẩm '" + product.productName() + "' vượt quá tồn kho (chỉ còn "
-                            + product.productAmount() + ").");
-                }
-            } else {
-                errorMessages.add("Sản phẩm mã " + productId + " không tồn tại.");
-            }
+        // 3. Phân luồng điều hướng dựa trên kết quả
+        if (result.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errorList", result.getErrorMessages());
+            return "redirect:/products";
         }
 
-        // SAU KHI VÒNG LẶP KẾT THÚC: Kiểm tra xem có lỗi nào không
-        if (!errorMessages.isEmpty()) {
-            // Gửi toàn bộ danh sách lỗi qua giao diện
-            redirectAttributes.addFlashAttribute("errorList", errorMessages);
-            return "redirect:/products"; // Chặn lại và quay về trang danh sách
-        }
+        // 4. Nếu thành công, nhét vào Session (Model) và đi tiếp
+        model.addAttribute("selectedItems", result.getSelectedItems());
+        model.addAttribute("totalOrderPrice", result.getTotalOrderPrice());
 
-        // Nếu errorMessages rỗng (không có lỗi nào), tiến hành qua trang xác nhận
-        model.addAttribute("selectedItems", selectedItems);
-        model.addAttribute("totalOrderPrice", totalOrderPrice);
-
-        return "redirect:/order/summary"; // Chuyển hướng sang trang xác nhận đơn hàng
+        return "redirect:/order/summary";
     }
 
     // BƯỚC 3: Xử lý khi bấm "Xác nhận đặt hàng" ở trang order.html

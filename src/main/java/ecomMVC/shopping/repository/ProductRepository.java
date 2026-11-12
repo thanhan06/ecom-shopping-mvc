@@ -24,39 +24,37 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
         @Query("SELECT p FROM ProductEntity p JOIN FETCH p.productType")
         List<ProductEntity> findAllWithProductType();
 
-        @Query ("SELECT p FROM ProductEntity p JOIN FETCH p.productType pt WHERE p.productId = :productId")
+        @Query("SELECT p FROM ProductEntity p JOIN FETCH p.productType pt WHERE p.productId = :productId")
         Optional<ProductEntity> findByIdWithProductType(@Param("productId") String productId);
 
-        // // 2. Đã thêm các từ khóa AND, khoảng trắng và sửa lỗi chính tả description
-        // @Query(
-        // value = "SELECT p FROM ProductEntity p "
-        // + "JOIN FETCH p.productType pt " // 1. BẮT BUỘC dùng JOIN FETCH ở đây và đặt
-        // tên là pt
-        // + "LEFT JOIN ProductOrderEntity o ON o.product = p "
-        // + "WHERE "
-        // + "(:productName IS NULL OR LOWER(p.productName) LIKE :productName) AND "
-        // + "(:productTypeId IS NULL OR pt.productTypeId = :productTypeId) AND " // 2.
-        // Gọi thẳng pt
-        // + "(:description IS NULL OR LOWER(p.description) LIKE :description) AND "
-        // + "p.status = true AND "
-        // + "pt.status = true "
-        // + "GROUP BY p, pt " // 3. ĐIỂM QUAN TRỌNG NHẤT: Bắt buộc Group By cả Entity p
-        // và Entity pt
-        // + "ORDER BY SUM(COALESCE(o.orderProductAmount, 0)) DESC, p.id DESC",
-        // countQuery = "SELECT COUNT(p) FROM ProductEntity p "
-        // + "JOIN p.productType pt " // Đếm thì không cần FETCH và không cần Order bảng
-        // kia
-        // + "WHERE "
-        // + "(:productName IS NULL OR LOWER(p.productName) LIKE :productName) AND "
-        // + "(:productTypeId IS NULL OR pt.productTypeId = :productTypeId) AND "
-        // + "(:description IS NULL OR LOWER(p.description) LIKE :description) AND "
-        // + "p.status = true AND "
-        // + "pt.status = true")
-        // Page<ProductEntity> findActiveProductsWithFilters(
-        // @Param("productName") String productName,
-        // @Param("productTypeId") String productTypeId,
-        // @Param("description") String description,
-        // Pageable pageable);
+        // 2. Đã thêm các từ khóa AND, khoảng trắng và sửa lỗi chính tả description
+        @Query(value = "SELECT p FROM ProductEntity p "
+                        + "JOIN FETCH p.productType pt "
+                        // ĐÃ XÓA LEFT JOIN BẢNG ORDER Ở ĐÂY
+                        + "WHERE "
+                        + "(:productName IS NULL OR LOWER(p.productName) LIKE :productName) AND "
+                        + "(:productTypeId IS NULL OR pt.productTypeId = :productTypeId) AND "
+                        + "(:description IS NULL OR LOWER(p.description) LIKE :description) AND "
+                        + "p.status = true AND "
+                        + "pt.status = true "
+                        // ĐÃ XÓA LỆNH GROUP BY Ở ĐÂY
+
+                        // THÊM SUBQUERY VÀO ORDER BY: Dùng để tính tổng bán ra mà không cần Join
+                        + "ORDER BY (SELECT COALESCE(SUM(o.orderProductAmount), 0) FROM ProductOrderEntity o WHERE o.product = p) DESC, p.productId DESC",
+
+                        countQuery = "SELECT COUNT(p) FROM ProductEntity p "
+                                        + "JOIN p.productType pt "
+                                        + "WHERE "
+                                        + "(:productName IS NULL OR LOWER(p.productName) LIKE :productName) AND "
+                                        + "(:productTypeId IS NULL OR pt.productTypeId = :productTypeId) AND "
+                                        + "(:description IS NULL OR LOWER(p.description) LIKE :description) AND "
+                                        + "p.status = true AND "
+                                        + "pt.status = true")
+        Page<ProductEntity> findActiveProductsWithFilters(
+                        @Param("productName") String productName,
+                        @Param("productTypeId") String productTypeId,
+                        @Param("description") String description,
+                        Pageable pageable);
 
         // @Modifying
         // @Query("UPDATE ProductEntity p SET p.productAmount = p.productAmount -

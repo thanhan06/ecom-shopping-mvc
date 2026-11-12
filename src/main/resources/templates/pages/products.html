@@ -26,17 +26,42 @@
                 <span style="color: red; font-weight: bold;">Bạn có quyền
                     ADMIN</span>
             </div>
+            <form th:action="@{/products}" method="get"
+                class="d-flex gap-2 mb-4">
 
+                <!-- Nhập tên sản phẩm -->
+                <input type="text" name="productName" th:value="${productName}"
+                    class="form-control" placeholder="Tên sản phẩm...">
+
+                <!-- Chọn Loại sản phẩm bằng Dropdown -->
+                <select name="productTypeId" class="form-control">
+                    <option value>-- Tất cả danh mục --</option>
+
+                    <!-- Vòng lặp vẽ ra các option -->
+                    <option th:each="type : ${listProductTypes}"
+                        th:value="${type.productTypeId}"
+                        th:text="${type.productTypeName}"
+                        th:selected="${type.productTypeId == productTypeId}">
+                        <!-- Lệnh th:selected giúp "giữ nguyên" mục khách vừa chọn sau khi bấm Tìm kiếm -->
+                    </option>
+                </select>
+
+                <!-- Nhập mô tả -->
+                <input type="text" name="description" th:value="${description}"
+                    class="form-control" placeholder="Mô tả...">
+
+                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+            </form>
             <h1>Product List</h1>
 
             <!-- Vùng hiển thị thông báo lỗi/thành công từ FlashAttributes -->
             <div id="messageContainer" style="margin-bottom: 20px;">
-                <ul  id="errorList" style="list-style-type: none; padding: 0;">
+                <ul id="errorList" style="list-style-type: none; padding: 0;">
                     <li th:each="error : ${errorList}" th:text="${error}"
                         style="color: red; font-weight: bold;"></li>
                 </ul>
                 <p th:if="${successMessage}" th:text="${successMessage}"
-                style="color: green; font-weight: bold;"></p>
+                    style="color: green; font-weight: bold;"></p>
             </div>
             <!-- Form Đặt hàng hàng loạt (Bulk Order) -->
             <form id="bulkOrderForm" th:action="@{/order/checkout}"
@@ -76,6 +101,22 @@
                 <button type="submit" class="btn btn-primary">Tạo đơn
                     hàng</button>
             </form>
+            <!-- Phần phân trang -->
+            <div th:if="${totalPages} >1">
+                <nav>
+                    <ul class="pagination">
+                        <!-- Các nút Số trang (1, 2, 3...) -->
+                        <li class="page-item"
+                            th:each="i : ${#numbers.sequence(1, totalPages)}"
+                            th:classappend="${currentPage == i} ? 'active'">
+                            <a class="page-link"
+                                th:href="@{/products(pageNo=${i}, productName=${productName}, productTypeId=${productTypeId}, description=${description})}">
+                                [[${i}]]
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </div>
 
         <th:block layout:fragment="page-js">
