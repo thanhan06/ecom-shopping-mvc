@@ -1,7 +1,23 @@
 <!-- fragments/header.html -->
 <header th:fragment="header(currentUrl)">
-    <nav>
-        <a th:href="@{/}" th:class="${currentUrl == '/' ? 'active' : ''}">Trang chủ</a>
-        <a th:href="@{/login}" th:class="${currentUrl == '/login' ? 'active' : ''}">Đăng nhập</a>
+    <nav class="row justify-content-end my-2">
+        <a class="col-auto d-flex align-items-center" th:href="@{/}"
+            th:classappend="${currentUrl == '/' ? 'active' : ''}">Trang chủ</a>
+        <!-- <div class="col" style="margin-bottom: 20px;">
+            <span style="font-weight: bold;">Ngôn ngữ / Language: </span>
+            <a th:href="@{''(lang=vi)}">Tiếng Việt</a> |
+            <a th:href="@{''(lang=en)}">English</a>
+        </div> -->
+        <p class="col-auto align-items-center mb-0 d-flex align-items-center">Xin chào, <span sec:authentication="name"></span>!</p>
+
+        <form class="col-1 d-inline" th:action="@{/logout}" method="post"
+            >
+            <button type="submit" class="btn btn-danger">Đăng xuất</button>
+        </form>
+
+        <!-- <div sec:authorize="hasRole('ADMIN')">
+                <span style="color: red; font-weight: bold;">Bạn có quyền
+                    ADMIN</span>
+        </div> -->
     </nav>
 </header>

@@ -9,7 +9,12 @@
         <meta name="description"
             th:content="${pageDesc ?: 'Hệ thống thương mại điện tử EcomMVC'}">
         <title layout:fragment="title">Tiêu đề mặc định</title>
-
+        <!-- Chỉ cần import Bootstrap 1 lần ở đây -->
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <!-- CSS dùng chung (Bootstrap, Tailwind, font...) -->
         <link rel="stylesheet" th:href="@{/css/style.css}">
 
@@ -19,7 +24,8 @@
     <body>
         <!-- 3. Bơm URL hiện tại vào Header để xử lý logic Active Menu -->
         <!-- Đổi #httpServletRequest.requestURI thành #ctx.springRequestContext.requestUri -->
-        <header th:replace="~{fragments/header :: header(currentUrl=${currentUrl})}"></header>
+        <header
+            th:replace="~{fragments/header :: header(currentUrl=${currentUrl})}"></header>
 
         <!-- Khu vực đổ dữ liệu của trang con -->
         <main layout:fragment="content">

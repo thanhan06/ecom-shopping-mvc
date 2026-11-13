@@ -11,21 +11,6 @@
     </head>
     <body>
         <div layout:fragment="content">
-            <div style="margin-bottom: 20px;">
-                <span style="font-weight: bold;">Ngôn ngữ / Language: </span>
-                <a th:href="@{''(lang=vi)}">Tiếng Việt</a> |
-                <a th:href="@{''(lang=en)}">English</a>
-            </div>
-            <p>Xin chào, <span sec:authentication="name"></span>!</p>
-
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="btn btn-danger">Đăng xuất</button>
-            </form>
-
-            <div sec:authorize="hasRole('ADMIN')">
-                <span style="color: red; font-weight: bold;">Bạn có quyền
-                    ADMIN</span>
-            </div>
             <form th:action="@{/products}" method="get"
                 class="d-flex gap-2 mb-4">
 
@@ -51,6 +36,9 @@
                     class="form-control" placeholder="Mô tả...">
 
                 <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                <!-- NÚT ĐẶT LẠI: Trỏ thẳng về /products để xóa sạch mọi tham số trên URL -->
+                <a th:href="@{/products}" class="btn btn-outline-secondary">Đặt
+                    lại</a>
             </form>
             <h1>Product List</h1>
 
@@ -101,21 +89,10 @@
                 <button type="submit" class="btn btn-primary">Tạo đơn
                     hàng</button>
             </form>
-            <!-- Phần phân trang -->
-            <div th:if="${totalPages} >1">
-                <nav>
-                    <ul class="pagination">
-                        <!-- Các nút Số trang (1, 2, 3...) -->
-                        <li class="page-item"
-                            th:each="i : ${#numbers.sequence(1, totalPages)}"
-                            th:classappend="${currentPage == i} ? 'active'">
-                            <a class="page-link"
-                                th:href="@{/products(pageNo=${i}, productName=${productName}, productTypeId=${productTypeId}, description=${description})}">
-                                [[${i}]]
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+            <!-- GỌI THANH PHÂN TRANG -->
+            <!-- Cú pháp: ~{thư_mục/tên_file :: tên_fragment(tham_số)} -->
+            <div
+                th:replace="~{fragments/pagination :: paginationBar('/products')}">
             </div>
         </div>
 
