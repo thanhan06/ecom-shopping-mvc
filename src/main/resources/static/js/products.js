@@ -1,82 +1,133 @@
+
 document.addEventListener("DOMContentLoaded", function () {
+
     const form = document.getElementById("bulkOrderForm");
-    const errorList = document.getElementById("errorList");
-    
+
+    // Lưu lỗi theo từng productId
+    const errors = new Map();
+
+    // Cập nhật Toast từ danh sách lỗi
+    function updateErrors() {
+        Notification.showErrors([...errors.values()]);
+    }
+
     if (form) {
-        // 1. KIỂM TRA TỒN KHO KHI RỜI Ô NHẬP
+
+        // KIỂM TRA TỒN KHO KHI RỜI Ô NHẬP
         form.addEventListener("focusout", async function (event) {
-            if (event.target && event.target.name === "quantities") {
-                const quantityInput = event.target;
-                const row = quantityInput.closest("tr");
-                const idInput = row.querySelector("input[name='productIds']");
-                const productId = idInput.value;
-                const quantity = parseInt(quantityInput.value);
 
-                // Khách xóa trắng ô -> Không làm gì cả
-                if (quantityInput.value.trim() === "") {
-                    errorList.innerHTML = "";
-                    return; 
+            if (event.target?.name !== "quantities") return;
+
+            const quantityInput = event.target;
+            const row = quantityInput.closest("tr");
+            const idInput = row.querySelector("input[name='productIds']");
+
+            const productId = idInput.value;
+            const value = quantityInput.value.trim();
+
+            // Nếu để trống: xóa lỗi của riêng sản phẩm này
+            if (value === "") {
+                errors.delete(productId);
+                updateErrors();
+                return;
+            }
+
+            const quantity = Number(value);
+
+            if (!Number.isInteger(quantity) || quantity <= 0) {
+                errors.set(
+                    productId,
+                    "Số lượng phải là một số nguyên dương."
+                );
+
+                updateErrors();
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `/api/check-stock?productId=${encodeURIComponent(productId)}&quantity=${quantity}`
+                );
+
+                if (!response.ok) {
+                    throw new Error("Không thể kiểm tra tồn kho.");
                 }
 
-                if (quantity <= 0 || isNaN(quantity)) {
-                    errorList.innerHTML = `<li style="color: red; font-weight: bold;">Số lượng phải là một số nguyên dương.</li>`;
-                    return;
+                const data = await response.json();
+
+                if (!data.valid) {
+                    errors.set(productId, data.message);
+                    quantityInput.focus(); // chặn không cho nhập số lượng không hợp lệ cho sản phẩm tiếp theo khi chưa sửa lỗi
+                } else {
+                    errors.delete(productId);
                 }
 
-                // Sửa lỗi 1: Thêm const
-                try {
-                    const response = await fetch(`/api/check-stock?productId=${productId}&quantity=${quantity}`);
-                    const data = await response.json();
-                    
-                    if (!data.valid) {
-                        quantityInput.focus();
-                        errorList.innerHTML = `<li style="color: red; font-weight: bold;">${data.message}</li>`;
-                    } else {
-                        errorList.innerHTML = ""; // Xóa lỗi nếu kho hợp lệ
-                    }
-                } catch (error) {
-                    console.error("Lỗi khi kiểm tra tồn kho:", error);
-                }
+                updateErrors();
+
+            } catch (error) {
+                console.error("Lỗi khi kiểm tra tồn kho:", error);
+
+                errors.set(
+                    productId,
+                    "Không thể kiểm tra tồn kho. Vui lòng thử lại."
+                );
+
+                updateErrors();
             }
         });
 
-        // 2. TỐI ƯU VÀ CHẶN SUBMIT
+        // CHẶN SUBMIT
         form.addEventListener("submit", function (event) {
-            // Sửa lỗi 3: Chặn ngay nếu trên màn hình đang hiển thị câu báo lỗi (chưa được khách sửa)
-            if (errorList.innerHTML.trim() !== "") {
+
+            // Kiểm tra các lỗi đã ghi nhận
+            if (errors.size > 0) {
                 event.preventDefault();
-                alert("Vui lòng sửa các lỗi số lượng màu đỏ trước khi tạo đơn hàng!");
+                updateErrors();
                 return;
             }
 
             const rows = form.querySelectorAll("tbody tr");
             let totalQuantity = 0;
-            
-            rows.forEach((row) => {
-                const idInput = row.querySelector("input[name='productIds']");
-                const quantityInput = row.querySelector("input[name='quantities']");
-                const quantity = parseInt(quantityInput.value);
 
-                if (isNaN(quantity) || quantity <= 0) {
-                    idInput.disabled = true;
-                    quantityInput.disabled = true;
-                } else {
-                    idInput.disabled = false;
-                    quantityInput.disabled = false;
+            rows.forEach(row => {
+                const quantityInput = row.querySelector(
+                    "input[name='quantities']"
+                );
+
+                const quantity = Number(quantityInput.value);
+
+                if (Number.isInteger(quantity) && quantity > 0) {
                     totalQuantity += quantity;
                 }
             });
-            
+
             if (totalQuantity === 0) {
                 event.preventDefault();
-                errorList.innerHTML = `<li style="color: red; font-weight: bold;">Hãy chọn ít nhất 1 sản phẩm.</li>`;
+                console.log("Không có sản phẩm nào được chọn.");
+                Notification.showError(
+                    "Hãy chọn ít nhất 1 sản phẩm."
+                );
 
-                // Mở khóa lại để khách tiếp tục thao tác
-                rows.forEach((row) => {
-                    row.querySelector('input[name="quantities"]').disabled = false;
-                    row.querySelector('input[name="productIds"]').disabled = false;
-                });
+                return;
             }
+
+            // Chỉ gửi những sản phẩm có số lượng hợp lệ
+            rows.forEach(row => {
+                const idInput = row.querySelector(
+                    "input[name='productIds']"
+                );
+
+                const quantityInput = row.querySelector(
+                    "input[name='quantities']"
+                );
+
+                const quantity = Number(quantityInput.value);
+
+                const valid = Number.isInteger(quantity) && quantity > 0;
+
+                idInput.disabled = !valid;
+                quantityInput.disabled = !valid;
+            });
         });
     }
 });

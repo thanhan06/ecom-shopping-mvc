@@ -10,81 +10,98 @@
         </th:block>
     </head>
     <body>
-        <div layout:fragment="content">
-            <form th:action="@{/products}" method="get"
-                class="d-flex gap-2 mb-4">
-
-                <!-- Nhập tên sản phẩm -->
-                <input type="text" name="productName" th:value="${productName}"
-                    class="form-control" placeholder="Tên sản phẩm...">
-
-                <!-- Chọn Loại sản phẩm bằng Dropdown -->
-                <select name="productTypeId" class="form-control">
-                    <option value>-- Tất cả danh mục --</option>
-
-                    <!-- Vòng lặp vẽ ra các option -->
-                    <option th:each="type : ${listProductTypes}"
-                        th:value="${type.productTypeId}"
-                        th:text="${type.productTypeName}"
-                        th:selected="${type.productTypeId == productTypeId}">
-                        <!-- Lệnh th:selected giúp "giữ nguyên" mục khách vừa chọn sau khi bấm Tìm kiếm -->
-                    </option>
-                </select>
-
-                <!-- Nhập mô tả -->
-                <input type="text" name="description" th:value="${description}"
-                    class="form-control" placeholder="Mô tả...">
-
-                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
-                <!-- NÚT ĐẶT LẠI: Trỏ thẳng về /products để xóa sạch mọi tham số trên URL -->
-                <a th:href="@{/products}" class="btn btn-outline-secondary">Đặt
-                    lại</a>
-            </form>
+        <div layout:fragment="content" class="container-fluid page-main">
             <h1>Product List</h1>
+            <form th:action="@{/products}" method="get"
+                class="row g-4 align-items-center">
 
+                <div class="col-3 align-items-center">
+                    <input type="text" name="productName"
+                        th:value="${productName}"
+                        class="form-control"
+                        placeholder="Tên sản phẩm...">
+                </div>
+
+                <div class="col-3">
+                    <select name="productTypeId"
+                        class="form-select" data-size="4">
+                        <option value>-- Tất cả danh mục --</option>
+                        <option th:each="type : ${listProductTypes}"
+                            th:value="${type.productTypeId}"
+                            th:text="${type.productTypeName}"
+                            th:selected="${type.productTypeId == productTypeId}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-4">
+                    <input type="text" name="description"
+                        th:value="${description}"
+                        class="form-control"
+                        placeholder="Mô tả...">
+                </div>
+
+                <div class="col-1">
+                    <button type="submit" class="btn btn-primary">
+                        Tìm kiếm
+                    </button>
+                </div>
+
+                <div class="col-1">
+                    <a th:href="@{/products}"
+                        class="btn btn-outline-secondary">
+                        Đặt lại
+                    </a>
+                </div>
+            </form>
             <!-- Vùng hiển thị thông báo lỗi/thành công từ FlashAttributes -->
-            <div id="messageContainer" style="margin-bottom: 20px;">
+            <!-- <div id="messageContainer" style="margin-bottom: 20px;">
                 <ul id="errorList" style="list-style-type: none; padding: 0;">
                     <li th:each="error : ${errorList}" th:text="${error}"
                         style="color: red; font-weight: bold;"></li>
                 </ul>
                 <p th:if="${successMessage}" th:text="${successMessage}"
                     style="color: green; font-weight: bold;"></p>
-            </div>
+            </div> -->
+            <!-- Toast thông báo lỗi -->
+            <div th:replace="~{fragments/notification :: notification}"></div>
             <!-- Form Đặt hàng hàng loạt (Bulk Order) -->
             <form id="bulkOrderForm" th:action="@{/order/checkout}"
                 method="post">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Price</th>
-                            <th>Product Type</th>
-                            <th>Quantity</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="product : ${products}">
-                            <td th:text="${product.productId}"></td>
-                            <td th:text="${product.productName}"></td>
-                            <td th:text="${product.description}"></td>
-                            <td th:text="${product.price}"></td>
-                            <td th:text="${product.productTypeName}"></td>
-                            <td>
-                                <!-- Mảng Product IDs ẩn -->
-                                <input type="hidden" name="productIds"
-                                    th:value="${product.productId}">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Price</th>
+                                <th>Product Type</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="product : ${products}">
+                                <td th:text="${product.productId}"></td>
+                                <td th:text="${product.productName}"></td>
+                                <td th:text="${product.description}"></td>
+                                <td th:text="${product.price}"></td>
+                                <td th:text="${product.productTypeName}"></td>
+                                <td>
+                                    <!-- Mảng Product IDs ẩn -->
+                                    <input type="hidden" name="productIds"
+                                        th:value="${product.productId}">
 
-                                <!-- Mảng Số lượng (để trống, không set value mặc định) -->
-                                <input type="number" name="quantities"
-                                    th:id="'quantity_' + ${product.productId}"
-                                    min="0">
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                    <!-- Mảng Số lượng (để trống, không set value mặc định) -->
+                                    <input type="number" name="quantities"
+                                        th:id="'quantity_' + ${product.productId}"
+                                        min="0">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <br>
                 <button type="submit" class="btn btn-primary">Tạo đơn
                     hàng</button>
