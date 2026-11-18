@@ -10,18 +10,19 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateErrors() {
         Notification.showErrors([...errors.values()]);
     }
-
+    console.log("form", form);
     if (form) {
-
+        
         // KIỂM TRA TỒN KHO KHI RỜI Ô NHẬP
         form.addEventListener("focusout", async function (event) {
 
-            if (event.target?.name !== "quantities") return;
+            if (!event.target?.name?.endsWith(".quantity")) return;
 
             const quantityInput = event.target;
+            console.log("quantityInput", quantityInput);
             const row = quantityInput.closest("tr");
-            const idInput = row.querySelector("input[name='productIds']");
-
+            const idInput = row.querySelector(".product-id-input");
+            console.log("idInput", idInput);
             const productId = idInput.value;
             const value = quantityInput.value.trim();
 
@@ -91,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             rows.forEach(row => {
                 const quantityInput = row.querySelector(
-                    "input[name='quantities']"
+                    ".quantity-input"
                 );
 
                 const quantity = Number(quantityInput.value);
@@ -118,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
 
                 const quantityInput = row.querySelector(
-                    "input[name='quantities']"
+                    ".quantity-input"
                 );
 
                 const quantity = Number(quantityInput.value);

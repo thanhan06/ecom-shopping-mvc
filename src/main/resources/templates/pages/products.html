@@ -81,7 +81,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="product : ${products}">
+                            <tr th:each="product, stat : ${products}">
                                 <td th:text="${product.productId}"></td>
                                 <td th:text="${product.productName}"></td>
                                 <td th:text="${product.description}"></td>
@@ -89,11 +89,13 @@
                                 <td th:text="${product.productTypeName}"></td>
                                 <td>
                                     <!-- Mảng Product IDs ẩn -->
-                                    <input type="hidden" name="productIds"
+                                    <input type="hidden" th:name="|orderItems[${stat.index}].productId|"
+                                        class="product-id-input"
                                         th:value="${product.productId}">
 
                                     <!-- Mảng Số lượng (để trống, không set value mặc định) -->
-                                    <input type="number" name="quantities"
+                                    <input type="number" th:name="|orderItems[${stat.index}].quantity|"
+                                        class="quantity-input form-control"
                                         th:id="'quantity_' + ${product.productId}"
                                         min="0">
                                 </td>

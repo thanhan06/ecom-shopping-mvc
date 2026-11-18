@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
@@ -15,6 +16,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ecomMVC.shopping.constant.Constant;
 import ecomMVC.shopping.dto.CheckoutResult;
 import ecomMVC.shopping.dto.OrderItemDTO;
+import ecomMVC.shopping.dto.req.OrderItemRequest;
+import ecomMVC.shopping.dto.req.OrderRequest;
 import ecomMVC.shopping.dto.res.ProductResponse;
 import ecomMVC.shopping.entity.ProductEntity;
 import ecomMVC.shopping.repository.ProductRepository;
@@ -46,18 +49,23 @@ public class OrderController {
 
     @PostMapping("/order/checkout")
     public String processCheckout(
-            @RequestParam(value = "productIds", required = false) List<String> productIds,
-            @RequestParam(value = "quantities", required = false) List<Integer> quantities,
+            @ModelAttribute OrderRequest orderRequest,
             Model model,
             RedirectAttributes redirectAttributes) {
-
+        
+        List<OrderItemRequest> orderItems = orderRequest.getOrderItems();
+        
         // 1. Chốt chặn cơ bản nhất
-        if (productIds == null || quantities == null || productIds.isEmpty()) {
+        // if (productIds == null || quantities == null || productIds.isEmpty()) {
+        //     redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng chọn ít nhất 1 sản phẩm!");
+        //     return "redirect:/products";
+        // }
+         if (orderItems == null || orderItems.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng chọn ít nhất 1 sản phẩm!");
             return "redirect:/products";
         }
         // 2. Giao toàn bộ việc nặng nhọc cho Service
-        CheckoutResult result = productService.processCheckout(productIds, quantities);
+        CheckoutResult result = productService.processCheckout(orderItems);
 
         // 3. Phân luồng điều hướng dựa trên kết quả
         if (result.hasErrors()) {

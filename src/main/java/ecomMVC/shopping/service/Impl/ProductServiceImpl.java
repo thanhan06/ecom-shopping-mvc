@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import ecomMVC.shopping.dto.CheckoutResult;
 import ecomMVC.shopping.dto.OrderItemDTO;
+import ecomMVC.shopping.dto.req.OrderItemRequest;
 import ecomMVC.shopping.dto.res.ProductResponse;
 import ecomMVC.shopping.entity.ProductEntity;
 import ecomMVC.shopping.mapper.ProductMapper;
@@ -42,24 +43,24 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void validateProductAndQuantity(String productId, Integer quantity, CheckoutResult result) {
+    public void validateProductAndQuantity(OrderItemRequest orderItemRequest, CheckoutResult result) {
         // 1. Kiểm tra đầu vào
-        if (quantity == null || quantity <= 0) {
-            result.addError("Sản phẩm mã " + productId + " có số lượng không hợp lệ.");
+        if (orderItemRequest.getQuantity() == null || orderItemRequest.getQuantity() <= 0) {
+            result.addError("Sản phẩm mã " + orderItemRequest.getProductId() + " có số lượng không hợp lệ.");
             return; // Dùng return thay cho continue để thoát sớm khỏi hàm này
         }
 
         // 2. Truy vấn Database
-        ProductResponse product = this.getProductById(productId);
+        ProductResponse product = this.getProductById(orderItemRequest.getProductId());
 
         // 3. Xử lý tồn kho
         if (product == null) {
-            result.addError("Sản phẩm mã " + productId + " không tồn tại.");
+            result.addError("Sản phẩm mã " + orderItemRequest.getProductId() + " không tồn tại.");
             return; // Thoát sớm
         }
 
-        if (quantity <= product.productAmount()) {
-            OrderItemDTO item = new OrderItemDTO(product, quantity);
+        if (orderItemRequest.getQuantity() <= product.productAmount()) {
+            OrderItemDTO item = new OrderItemDTO(product, orderItemRequest.getQuantity());
             result.addItem(item); // Hợp lệ thì thêm vào giỏ
         } else {
             result.addError("Sản phẩm '" + product.productName() + "' vượt quá tồn kho (chỉ còn "
@@ -68,12 +69,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public CheckoutResult processCheckout(List<String> productIds, List<Integer> quantities) {
+    public CheckoutResult processCheckout(List<OrderItemRequest> orderItems) {
         CheckoutResult result = new CheckoutResult();
 
-        for (int i = 0; i < productIds.size(); i++) {
-            // Gọi hàm phụ xử lý cho từng phần tử
-            validateProductAndQuantity(productIds.get(i), quantities.get(i), result);
+        for (OrderItemRequest orderItemRequest : orderItems) {
+            validateProductAndQuantity(orderItemRequest, result);
         }
 
         return result;
