@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import ecomMVC.shopping.constant.Constant;
 import ecomMVC.shopping.dto.res.ProductResponse;
+import ecomMVC.shopping.service.CartService;
 import ecomMVC.shopping.service.ProductService;
 import ecomMVC.shopping.service.ProductTypeService;
+import jakarta.servlet.http.HttpSession;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -20,22 +22,29 @@ public class ProductController {
     @Autowired
     ProductService productService;
 
-    @Autowired 
+    @Autowired
     ProductTypeService productTypeService;
+
+    @Autowired
+    CartService cartService;
 
     @GetMapping("/products")
     public String showProducts(@RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
         @RequestParam (value = "productName", required = false) String productName,
         @RequestParam (value = "productTypeId", required = false) String productTypeId,
         @RequestParam (value = "description", required = false) String description,
-            Model model) {
+        Model model,
+        HttpSession session) {
         
         int pageSize = 5; // Số lượng sản phẩm trên mỗi trang
         Page<ProductResponse> productPage = productService.getActiveProductsWithFilters(productName, productTypeId, description, pageNo, pageSize);
 
         // Đẩy danh sách sản phẩm xuống view
         model.addAttribute("products", productPage.getContent());
-
+        
+        // Đẩy xuống thông tin CART QUANTITIES
+        model.addAttribute("cartQuantities", cartService.getCart(session));
+        
         // Thông tin phân trang
         model.addAttribute("currentPage", pageNo);
         model.addAttribute("totalPages", productPage.getTotalPages());

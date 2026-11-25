@@ -8,6 +8,8 @@
         <!-- 1. SEO động: Nếu Controller không truyền 'pageDesc', dùng câu mặc định -->
         <meta name="description"
             th:content="${pageDesc ?: 'Hệ thống thương mại điện tử EcomMVC'}">
+        <meta name="_csrf" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:content="${_csrf.headerName}">
         <title layout:fragment="title">Tiêu đề mặc định</title>
         <!-- Chỉ cần import Bootstrap 1 lần ở đây -->
         <link

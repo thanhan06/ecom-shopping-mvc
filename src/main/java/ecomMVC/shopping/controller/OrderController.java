@@ -15,12 +15,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ecomMVC.shopping.constant.Constant;
 import ecomMVC.shopping.dto.CheckoutResult;
-import ecomMVC.shopping.dto.OrderItemDTO;
 import ecomMVC.shopping.dto.req.OrderItemRequest;
 import ecomMVC.shopping.dto.req.OrderRequest;
-import ecomMVC.shopping.dto.res.ProductResponse;
-import ecomMVC.shopping.entity.ProductEntity;
-import ecomMVC.shopping.repository.ProductRepository;
 import ecomMVC.shopping.service.ProductService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -52,15 +48,16 @@ public class OrderController {
             @ModelAttribute OrderRequest orderRequest,
             Model model,
             RedirectAttributes redirectAttributes) {
-        
+
         List<OrderItemRequest> orderItems = orderRequest.getOrderItems();
-        
+
         // 1. Chốt chặn cơ bản nhất
         // if (productIds == null || quantities == null || productIds.isEmpty()) {
-        //     redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng chọn ít nhất 1 sản phẩm!");
-        //     return "redirect:/products";
+        // redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng chọn ít nhất 1
+        // sản phẩm!");
+        // return "redirect:/products";
         // }
-         if (orderItems == null || orderItems.isEmpty()) {
+        if (orderItems == null || orderItems.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng chọn ít nhất 1 sản phẩm!");
             return "redirect:/products";
         }
@@ -79,6 +76,10 @@ public class OrderController {
 
         return "redirect:/order/summary";
     }
+
+    // Khi chuyển trang 1 2 3 thì số lượng nhập của sản phẩm của trang trước sẽ bị
+    // mất, nên cần phải lưu lại số lượng nhập của sản phẩm vào Session (Model) để
+    // khi chuyển trang thì vẫn giữ nguyên số lượng nhập của sản phẩm
 
     // BƯỚC 3: Xử lý khi bấm "Xác nhận đặt hàng" ở trang order.html
     @PostMapping("/order/confirm")
